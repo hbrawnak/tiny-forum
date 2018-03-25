@@ -1,4 +1,5 @@
 class DiscussionsController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:index, :show]
   before_action :set_owned_discussion, only: [:edit, :update, :destroy]
 
   # GET /discussions
@@ -67,7 +68,13 @@ class DiscussionsController < ApplicationController
     def set_owned_discussion
       begin
         @discussion = current_user.discussions.find(params[:id])
-      rescue
+      rescue ActiveRecord::RecordNotFound => e
+        logger.info "--------------------------------------------------------"
+        if user_logged_in?
+          logger.info "#{current_user.name} is trying to edit discussion #{params[:id]}, but they don't own it."
+        end
+        logger.info e
+        logger.info "_________________________________________________________"
         flash[:notice] = "You don't have access to that."
         redirect_to root_path
       end

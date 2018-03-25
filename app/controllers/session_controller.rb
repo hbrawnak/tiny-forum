@@ -1,4 +1,5 @@
 class SessionController < ApplicationController
+  skip_before_action :authenticate_user!, only: [:new]
 
   def new
     user = User.create_or_update_from(request.env['omniauth.auth'])
